@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <cstdint>
 using namespace std;
 
 class BigInt {
@@ -27,6 +28,7 @@ public:
     // Constructor from 64-bit integer
     BigInt(int64_t value) {
         // TODO: Implement this constructor
+        int64_t x = (value);
     }
 
     // Constructor from string representation
