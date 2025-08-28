@@ -5,6 +5,7 @@ using namespace std;
 
 class BigInt
 {
+private:
     string number;   // Stores the number as a string
     bool isNegative; // True if number is negative
 
@@ -167,7 +168,7 @@ public:
     friend bool operator==(const BigInt &lhs, const BigInt &rhs);
     friend bool operator<(const BigInt &lhs, const BigInt &rhs);
 
-    bool getisnegative() const
+    bool getNegative() const
     {
         return isNegative;
     }
@@ -225,14 +226,14 @@ BigInt operator%(BigInt lhs, const BigInt &rhs)
 bool operator==(const BigInt &lhs, const BigInt &rhs)
 {
 
-    return (lhs.getisnegative() == rhs.getisnegative()) && (lhs.getNumber() == rhs.getNumber());
+    return (lhs.getNegative() == rhs.getNegative()) && (lhs.getNumber() == rhs.getNumber());
 }
 
 // Inequality comparison operator (x != y)
 bool operator!=(const BigInt &lhs, const BigInt &rhs)
 {
 
-    return (lhs.getisnegative() != rhs.getisnegative()) || (lhs.getNumber() != rhs.getNumber());
+    return (lhs.getNegative() != rhs.getNegative()) || (lhs.getNumber() != rhs.getNumber());
 }
 
 // Less-than comparison operator (x < y)
@@ -242,12 +243,12 @@ bool operator<(const BigInt &lhs, const BigInt &rhs)
     {
         return true;
     }
-    if (!lhs.getisnegative() && rhs.getisnegative())
+    if (!lhs.getNegative() && rhs.getNegative())
     {
         return false;
     }
     int x = lhs.compareMagnitude(rhs);
-    if (!lhs.getisnegative() && !rhs.getisnegative())
+    if (!lhs.getNegative() && !rhs.getNegative())
     {
         return x < 0;
     }
