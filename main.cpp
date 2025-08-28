@@ -3,15 +3,38 @@
 #include <cstdint>
 using namespace std;
 
-class BigInt
+class BigInt // BigInt x(237846)        x.number  = "237846"
 {
+private:
     string number;   // Stores the number as a string
     bool isNegative; // True if number is negative
 
     // Remove unnecessary leading zeros from the number string
     void removeLeadingZeros()
     {
-        // TODO: Implement this function
+        // handling empty string
+        if (number.empty())
+        {
+            number = "0";
+            return;
+        }
+
+        int firstNonZero = 0;
+        // if there is a zero in the beginning
+        while (firstNonZero < number.length() && number[firstNonZero] == '0')
+        {
+            firstNonZero++; // keep moving the pointer
+        }
+
+        // if all digits are zero return '0'
+        if (firstNonZero == number.length()) // since the pointer = the length then the number was ex : "00000"
+        {
+            number = "0";
+        }
+        else
+        {
+            number = number.substr(firstNonZero); // substr makes a string from the index firstNonZero
+        }
     }
 
     // Compare absolute values of two BigInts (ignore signs)
@@ -26,14 +49,14 @@ public:
     // Default constructor - initialize to zero
     BigInt()
     {
-        // TODO: Implement this constructor
+        number = "0";
+        isNegative = false;
     }
 
     // Constructor from 64-bit integer
     BigInt(int64_t value)
     {
         // TODO: Implement this constructor
-        int64_t x = (value);
     }
 
     // Constructor from string representation
@@ -96,6 +119,17 @@ public:
     {
         // TODO: Implement this operator
         return *this;
+    }
+    bool getIsNegative() const
+    {
+        return isNegative;
+    }
+
+    void setIsNegative(bool negative) { isNegative = negative; }
+
+    string getNumber() const
+    {
+        return number;
     }
 
     // Division assignment operator (x /= y)
@@ -166,19 +200,6 @@ public:
     // Friend declarations for comparison operators
     friend bool operator==(const BigInt &lhs, const BigInt &rhs);
     friend bool operator<(const BigInt &lhs, const BigInt &rhs);
-
-    bool getisnegative() const
-    {
-        return isNegative;
-    }
-    void setisnegative(bool negative)
-    {
-        isNegative = negative;
-    }
-    string getNumber() const
-    {
-        return number;
-    }
 };
 
 // Binary addition operator (x + y)
@@ -224,45 +245,27 @@ BigInt operator%(BigInt lhs, const BigInt &rhs)
 // Equality comparison operator (x == y)
 bool operator==(const BigInt &lhs, const BigInt &rhs)
 {
-
-    return (lhs.getisnegative() == rhs.getisnegative()) && (lhs.getNumber() == rhs.getNumber());
+    // TODO: Implement this operator
+    return false;
 }
 
 // Inequality comparison operator (x != y)
 bool operator!=(const BigInt &lhs, const BigInt &rhs)
 {
-
-    return (lhs.getisnegative() != rhs.getisnegative()) || (lhs.getNumber() != rhs.getNumber());
+    // TODO: Implement this operator
+    return false;
 }
 
 // Less-than comparison operator (x < y)
 bool operator<(const BigInt &lhs, const BigInt &rhs)
 {
-    if (lhs.isNegative && !rhs.isNegative)
-    {
-        return true;
-    }
-    if (!lhs.getisnegative() && rhs.getisnegative())
-    {
-        return false;
-    }
-    int x = lhs.compareMagnitude(rhs);
-    if (!lhs.getisnegative() && !rhs.getisnegative())
-    {
-        return x < 0;
-    }
-    else
-    {
-        return x > 0;
-    }
-    return false;
     // TODO: Implement this operator
+    return false;
 }
 
 // Less-than-or-equal comparison operator (x <= y)
 bool operator<=(const BigInt &lhs, const BigInt &rhs)
 {
-    return (lhs < rhs) || (lhs == rhs);
     // TODO: Implement this operator
     return false;
 }
@@ -270,7 +273,6 @@ bool operator<=(const BigInt &lhs, const BigInt &rhs)
 // Greater-than comparison operator (x > y)
 bool operator>(const BigInt &lhs, const BigInt &rhs)
 {
-    return !(lhs <= rhs);
     // TODO: Implement this operator
     return false;
 }
@@ -278,8 +280,6 @@ bool operator>(const BigInt &lhs, const BigInt &rhs)
 // Greater-than-or-equal comparison operator (x >= y)
 bool operator>=(const BigInt &lhs, const BigInt &rhs)
 {
-    return (lhs > rhs) || (lhs == rhs);
-
     // TODO: Implement this operator
     return false;
 }
