@@ -143,6 +143,12 @@ public:
     // Friend declarations for comparison operators
     friend bool operator==(const BigInt& lhs, const BigInt& rhs);
     friend bool operator<(const BigInt& lhs, const BigInt& rhs);
+
+
+     bool getisnegative()const {
+    return isNegative;}
+    void setisnegative(bool negative){
+    isNegative=negative;}
 };
 
 // Binary addition operator (x + y)
@@ -182,36 +188,57 @@ BigInt operator%(BigInt lhs, const BigInt& rhs) {
 
 // Equality comparison operator (x == y)
 bool operator==(const BigInt& lhs, const BigInt& rhs) {
-    // TODO: Implement this operator
-    return false;
+
+
+
+    return (lhs.BigInt.getneg == rhs.isNegative) && (lhs.number == rhs.number);
+
 }
 
 // Inequality comparison operator (x != y)
 bool operator!=(const BigInt& lhs, const BigInt& rhs) {
-    // TODO: Implement this operator
-    return false;
+
+    return (lhs.isNegative !=rhs.isNegative)||(left.number != right.number);
 }
 
 // Less-than comparison operator (x < y)
 bool operator<(const BigInt& lhs, const BigInt& rhs) {
-    // TODO: Implement this operator
+    if(lhs.isNegative&& !rhs.isNegative){
+       return true;
+    }
+    if(!lhs.isNegative() && rhs.isNegative){
+        return false;
+    }
+    int x=lhs.compareMagnitude(rhs);
+    if(!lhs.isNegative&& !rhs.isNegative){
+        return x<0;
+    }
+    else{
+       return x>0;
+    }
     return false;
+    // TODO: Implement this operator
+
 }
 
 // Less-than-or-equal comparison operator (x <= y)
 bool operator<=(const BigInt& lhs, const BigInt& rhs) {
+    return (lhs<rhs)||(lhs==rhs);
     // TODO: Implement this operator
-    return false;
+return false;
 }
 
 // Greater-than comparison operator (x > y)
 bool operator>(const BigInt& lhs, const BigInt& rhs) {
+    return !(lhs<=rhs);
     // TODO: Implement this operator
     return false;
 }
 
 // Greater-than-or-equal comparison operator (x >= y)
 bool operator>=(const BigInt& lhs, const BigInt& rhs) {
+    return (lhs>rhs)||(lhs==rhs);
+
     // TODO: Implement this operator
     return false;
 }
