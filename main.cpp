@@ -27,7 +27,8 @@ public:
     // Default constructor - initialize to zero
     BigInt()
     {
-        // TODO: Implement this constructor
+        number = "0";
+        isNegative = false;
     }
 
     // Constructor from 64-bit integer
@@ -162,8 +163,10 @@ public:
     // Convert BigInt to string representation
     string toString() const
     {
-        // TODO: Implement this function    // hint use the isNegative bool to add '-' or not
-        return "";
+        if (isNegative){
+            number = "-" + number;
+        }
+        return number;
     }
 
     // Output stream operator (for printing)            -hazem
