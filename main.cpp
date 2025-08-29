@@ -55,7 +55,6 @@ public:
         // TODO: Implement if needed
     }
 
-    // Assignment operator
     BigInt &operator=(const BigInt &other)
     {
         // TODO: Implement this operator
@@ -66,15 +65,27 @@ public:
     BigInt operator-() const
     {
         BigInt result;
-        // TODO: Implement negation logic
+        result.number = this->number;
+
+        if (number == "0") // if 0 then don't do anything
+        {
+            result.isNegative = false;
+        }
+        else
+        {
+            result.isNegative = !(this->isNegative); // this means the given BigInt ex - 1234 "1234" is "this"
+        }
+
         return result;
     }
 
     // Unary plus operator (+x)
     BigInt operator+() const
     {
-        BigInt result;
         // TODO: Implement this operator
+        BigInt result;
+        result.number = this->number;
+        result.isNegative = this->isNegative;
         return result;
     }
 
@@ -82,6 +93,7 @@ public:
     BigInt &operator+=(const BigInt &other)
     {
         // TODO: Implement this operator
+        *this = *this + other;
         return *this;
     }
 
@@ -89,6 +101,7 @@ public:
     BigInt &operator-=(const BigInt &other)
     {
         // TODO: Implement this operator
+        *this = *this - other;
         return *this;
     }
 
@@ -96,6 +109,7 @@ public:
     BigInt &operator*=(const BigInt &other)
     {
         // TODO: Implement this operator
+        *this = *this * other;
         return *this;
     }
 
@@ -103,6 +117,7 @@ public:
     BigInt &operator/=(const BigInt &other)
     {
         // TODO: Implement this operator
+        *this = *this / other;
         return *this;
     }
 
@@ -110,57 +125,66 @@ public:
     BigInt &operator%=(const BigInt &other)
     {
         // TODO: Implement this operator
+        *this = *this % other;
         return *this;
     }
 
     // Pre-increment operator (++x)
     BigInt &operator++()
     {
-        // TODO: Implement this operator
-        return *this;
+        *this += BigInt(1); // add 1 to current object
+        return *this;       // returns the added object before doing the intended function
     }
 
     // Post-increment operator (x++)
     BigInt operator++(int)
     {
-        BigInt temp;
-        // TODO: Implement this operator
-        return temp;
+        BigInt temp = *this; // save this current value
+        *this += BigInt(1);  // increment it
+        return temp;         // but return the old value to do the needed
     }
 
-    // Pre-decrement operator (--x)
+    // Pre-decrement operator (--x)   THE SAME AS THE INCREMENT
     BigInt &operator--()
     {
-        // TODO: Implement this operator
+        *this -= BigInt(1);
         return *this;
     }
 
     // Post-decrement operator (x--)
     BigInt operator--(int)
     {
-        BigInt temp;
-        // TODO: Implement this operator
+        BigInt temp = *this;
+        *this -= BigInt(1);
         return temp;
     }
 
     // Convert BigInt to string representation
     string toString() const
     {
-        // TODO: Implement this function
+        // TODO: Implement this function    // hint use the isNegative bool to add '-' or not
         return "";
     }
 
-    // Output stream operator (for printing)
-    friend ostream &operator<<(ostream &os, const BigInt &num)
-    {
+    // Output stream operator (for printing)            -hazem
+    friend ostream &operator<<(ostream &os, const BigInt &num) // os here is like cout <<
+    {                                                          //  this is os <------/     | - > operator
         // TODO: Implement this operator
+        if (num.isNegative && num.number != "0") // if the number is negative
+        {
+            os << "-"; // print "-"
+        }
+        // prints the number anyway if it was negative the if condition above handles it
+        os << num.number;
         return os;
     }
 
     // Input stream operator (for reading from input)
-    friend istream &operator>>(istream &is, BigInt &num)
+    friend istream &operator>>(istream &is, BigInt &num) // -hazem
     {
-        // TODO: Implement this operator
+        string input;        // if the user enters "1235" it is stored as a string
+        is >> input;         // read the string from input (like cin) and store it in input
+        num = BigInt(input); // then use input to make string constructor to create BigInt
         return is;
     }
 
@@ -171,10 +195,6 @@ public:
     bool getNegative() const
     {
         return isNegative;
-    }
-    void setisnegative(bool negative)
-    {
-        isNegative = negative;
     }
     string getNumber() const
     {
