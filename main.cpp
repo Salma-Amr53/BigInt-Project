@@ -191,6 +191,8 @@ public:
     // Friend declarations for comparison operators
     friend bool operator==(const BigInt &lhs, const BigInt &rhs);
     friend bool operator<(const BigInt &lhs, const BigInt &rhs);
+    friend BigInt operator+(BigInt lhs, const BigInt &rhs);
+    friend BigInt operator-(BigInt lhs, const BigInt &rhs);
 
     bool getNegative() const
     {
@@ -206,7 +208,59 @@ public:
 BigInt operator+(BigInt lhs, const BigInt &rhs)
 {
     BigInt result;
-    // TODO: Implement this operator
+
+    int carry = 0;
+    // get sizes
+    int i = lhs.number.length() - 1;
+    int j = rhs.number.length() - 1;
+
+    while (i >= 0 && j >= 0)
+    {
+        int firstDigit = lhs.number[i] - '0';  // the rightmost number in the first number
+        int secondDigit = rhs.number[j] - '0'; // the rightmost number in the second number
+
+        int sum = firstDigit + secondDigit + carry;
+
+        // if sum is 16 then carry is 1 and digit is 6
+
+        carry = sum / 10;     // carry is 0 or 1
+        int digit = sum % 10; // digit is 0-9      , this is the digit to add in the result
+
+        // enters that number in the beginning of result ex result is "123" sum is 8 so new number is "8123"
+        result.number = char(digit + '0') + result.number; // change it to char because it is one digit
+
+        i--;
+        j--;
+    }
+
+    // the next 2 whiles is just getting every number out of either the first number or the second number
+    while (i >= 0)
+    {
+        int firstDigit = lhs.number[i] - '0';
+        int sum = firstDigit + carry;
+        carry = sum / 10;
+        int digit = sum % 10;
+        result.number = char(digit + '0') + result.number;
+        i--;
+    }
+
+    while (j >= 0)
+    {
+        int secondDigit = rhs.number[j] - '0';
+        int sum = secondDigit + carry;
+        carry = sum / 10;
+        int digit = sum % 10;
+        result.number = char(digit + '0') + result.number;
+        j--;
+    }
+
+    // if there is still a carry after finishing then it means that there is no 1 at the end
+    // so we must add it
+    if (carry) // 0 or 1
+    {
+        result.number = char(carry + '0') + result.number;
+    }
+
     return result;
 }
 
@@ -214,7 +268,80 @@ BigInt operator+(BigInt lhs, const BigInt &rhs)
 BigInt operator-(BigInt lhs, const BigInt &rhs)
 {
     BigInt result;
-    // TODO: Implement this operator
+    result.number = "";
+    result.isNegative = false;
+
+    int borrow = 0;
+    int i = lhs.number.length() - 1;
+    int j = rhs.number.length() - 1;
+
+    while (i >= 0 && j >= 0)
+    {
+        int firstDigit = lhs.number[i] - '0';
+        int secondDigit = rhs.number[j] - '0';
+
+        if (borrow)
+        {
+            if (firstDigit == 0)
+            {
+                // if the digit is 0 and i take borrow from it it becomes -1 but
+                // but -1 is invalid so we have to take borrow from the left so it becomes -1 + 10 = 9
+                firstDigit = 9;
+                // leave borrow = 1 because we took 1 from the left digit
+            }
+            else
+            {
+                firstDigit--;
+                borrow = 0;
+            }
+            int digit;
+            if (firstDigit >= secondDigit)
+            {
+                digit = firstDigit - secondDigit;
+            }
+            else
+            {
+                firstDigit += 10;
+                borrow = 1;
+                digit = firstDigit - secondDigit;
+            }
+            result.number = char(digit + '0') + result.number;
+            i--;
+            j--;
+        }
+    }
+    // handle remaining digits from first number
+    int firstDigit = lhs.number[i] - '0';
+    if (borrow)
+    {
+        if (firstDigit == 0)
+        {
+            firstDigit = 9;
+        }
+        else
+        {
+            firstDigit--;
+        }
+        borrow = 0;
+        lhs.number[i] = char(firstDigit + '0');
+    }
+
+    while (i >= 0)
+    {
+        int firstDigit = lhs.number[i] - '0';
+        i--;
+    }
+
+    // Second number shouldn't have remaining digits in proper subtraction
+    // If j >= 0, it means rhs > lhs, which would give negative result
+    // For now, we'll ignore remaining digits from rhs
+
+    // Remove leading zeros but keep at least one digit
+    while (result.number.length() > 1 && result.number[0] == '0')
+    {
+        result.number = result.number.substr(1);
+    }
+
     return result;
 }
 
