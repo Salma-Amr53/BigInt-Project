@@ -93,7 +93,8 @@ public:
     BigInt &operator+=(const BigInt &other)
     {
         // TODO: Implement this operator
-        *this = *this + other;
+        BigInt temp = *this;
+        *this = temp + other;
         return *this;
     }
 
@@ -267,18 +268,47 @@ BigInt operator+(BigInt lhs, const BigInt &rhs)
 // Binary subtraction operator (x - y)
 BigInt operator-(BigInt lhs, const BigInt &rhs)
 {
-    BigInt result;
-    result.number = "";
-    result.isNegative = false;
+    // HANDLING SIGNS
+    if (rhs.isNegative && lhs.isNegative) // if both are negative  ex -x - (-y) return y - x
+    {
+        return rhs - lhs;
+    }
+    if (rhs.isNegative) // handle case if rhs is negative
+    {
+        return (lhs + rhs);
+    }
+    if (lhs.isNegative) // handle case if lhs is negative
+    {
+        return -(lhs + rhs);
+    }
 
+    BigInt Minuend, Subtrahend, result; // if x - y , then x is minuend and y is subtrahend (mathematical names)
+
+    // HANDLING WHICH NUMBER IS BIGGER
+    if (lhs > rhs)
+    {
+        Minuend = lhs; // if x is bigger than y , then do normal x - y
+        Subtrahend = rhs;
+    }
+    else if (lhs < rhs)
+    {
+        Minuend = rhs; // if y is bigger than x , then do y - x and make isNegative true because -ve number
+        Subtrahend = lhs;
+        result.isNegative = true;
+    }
+    else
+    {
+        return BigInt(0); // if x - x return 0
+    }
+    //   ---------    X - Y    ---------
     int borrow = 0;
-    int i = lhs.number.length() - 1;
-    int j = rhs.number.length() - 1;
+    int i = Minuend.number.length() - 1;    // length of x
+    int j = Subtrahend.number.length() - 1; // length of y
 
     while (i >= 0 && j >= 0)
     {
-        int firstDigit = lhs.number[i] - '0';
-        int secondDigit = rhs.number[j] - '0';
+        int firstDigit = Minuend.number[i] - '0';     // takes the rightmost digit in "x"
+        int secondDigit = Subtrahend.number[j] - '0'; // takes the rightmost digit in "y"
 
         if (borrow)
         {
@@ -291,9 +321,10 @@ BigInt operator-(BigInt lhs, const BigInt &rhs)
             }
             else
             {
-                firstDigit--;
+                firstDigit--; // else just borrow 1 from the digit
                 borrow = 0;
             }
+
             int digit;
             if (firstDigit >= secondDigit)
             {
@@ -301,18 +332,19 @@ BigInt operator-(BigInt lhs, const BigInt &rhs)
             }
             else
             {
-                firstDigit += 10;
-                borrow = 1;
+                firstDigit += 10; // ex 116 - 8   taking (6 - 8) 8 is bigger so borrow
+                borrow = 1;       // so now 6 is 16 - 8 is 8 and the number 116 becomes 10 (16-8) so 108
                 digit = firstDigit - secondDigit;
             }
-            result.number = char(digit + '0') + result.number;
+            result.number = char(digit + '0') + result.number; // put this digit in the left of the string
             i--;
             j--;
         }
     }
-    // handle remaining digits from first number
-    int firstDigit = lhs.number[i] - '0';
-    if (borrow)
+    int firstDigit = Minuend.number[i] - '0';
+    int secondDigit = Minuend.number[i] - '0';
+    // handle the last borrow
+    if (borrow && i >= 0)
     {
         if (firstDigit == 0)
         {
@@ -323,25 +355,17 @@ BigInt operator-(BigInt lhs, const BigInt &rhs)
             firstDigit--;
         }
         borrow = 0;
-        lhs.number[i] = char(firstDigit + '0');
+        Minuend.number[i] = char(firstDigit + '0');
     }
-
+    // handle remaining digits from first number
     while (i >= 0)
     {
-        int firstDigit = lhs.number[i] - '0';
+        char thisChar = Minuend.number[i];
+        result.number = thisChar + result.number;
         i--;
     }
 
-    // Second number shouldn't have remaining digits in proper subtraction
-    // If j >= 0, it means rhs > lhs, which would give negative result
-    // For now, we'll ignore remaining digits from rhs
-
-    // Remove leading zeros but keep at least one digit
-    while (result.number.length() > 1 && result.number[0] == '0')
-    {
-        result.number = result.number.substr(1);
-    }
-
+    result.removeLeadingZeros(); // remove zeros from the beginning of the number
     return result;
 }
 
