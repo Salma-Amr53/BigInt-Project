@@ -117,12 +117,10 @@ public:
     }
 
     // Multiplication assignment operator (x *= y)
-    BigInt &operator*=(const BigInt &other)
-    {
-        // TODO: Implement this operator
-        return *this;
-    }
-
+    BigInt& operator*=(const BigInt& other) {
+    *this = *this * other;
+    return *this;
+}
     // Division assignment operator (x /= y)
     BigInt &operator/=(const BigInt &other)
     {
@@ -131,11 +129,10 @@ public:
     }
 
     // Modulus assignment operator (x %= y)
-    BigInt &operator%=(const BigInt &other)
-    {
-        // TODO: Implement this operator
-        return *this;
-    }
+    BigInt& operator%=(const BigInt& other) {
+    *this = *this % other;
+    return *this;
+}
 
     // Pre-increment operator (++x)
     BigInt &operator++()
