@@ -48,6 +48,7 @@ public:
     // Copy constructor
     BigInt(const BigInt &other)
     {
+
         // TODO: Implement this constructor
     }
 
@@ -58,8 +59,12 @@ public:
         // no destructor needed
     }
 
-    BigInt &operator=(const BigInt &other)
+    BigInt &operator=(const BigInt &other)//rana
     {
+        if(this != &other){
+            this->number=other.number;
+            this->isNegative=other.isNegative;
+        }
         // TODO: Implement this operator
         return *this;
     }
@@ -237,11 +242,11 @@ BigInt operator+(BigInt lhs, const BigInt &rhs)
         temp.isNegative = false;
         return lhs - temp;
     }
-    
+
     // Both same sign: add magnitudes and keep the sign
     BigInt result;
     result.isNegative = lhs.isNegative; // Both have same sign
-    
+
     int carry = 0;
     int i = lhs.number.length() - 1;
     int j = rhs.number.length() - 1;
@@ -297,7 +302,7 @@ BigInt operator-(BigInt lhs, const BigInt &rhs)
     // Both positive: determine which is larger
     BigInt result;
     bool lhsLarger = false;
-    
+
     // Compare magnitudes
     if (lhs.number.length() > rhs.number.length()) {
         lhsLarger = true;
@@ -307,7 +312,7 @@ BigInt operator-(BigInt lhs, const BigInt &rhs)
         // Same length, compare digit by digit
         lhsLarger = (lhs.number >= rhs.number);
     }
-    
+
     if (lhs.number == rhs.number) {
         return BigInt(0);
     }
@@ -342,7 +347,7 @@ BigInt operator-(BigInt lhs, const BigInt &rhs)
 
         int digit = largerDigit - smallerDigit;
         result.number = char(digit + '0') + result.number;
-        
+
         i--;
         j--;
     }
@@ -351,7 +356,7 @@ BigInt operator-(BigInt lhs, const BigInt &rhs)
     while (result.number.length() > 1 && result.number[0] == '0') {
         result.number = result.number.substr(1);
     }
-    
+
     // Handle zero case
     if (result.number == "0") {
         result.isNegative = false;
