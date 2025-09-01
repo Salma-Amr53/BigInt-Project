@@ -12,6 +12,15 @@ private:
     // Remove unnecessary leading zeros from the number string
     void removeLeadingZeros()
     {
+        int i=0;
+        while(i<number.length()-1&&number[i]=='0'){
+            i++;
+        }
+        number=number.substr(i);
+        if(number=="0"){
+            isNegative=false;
+        }
+
         // TODO: Implement this function
     }
 
@@ -19,6 +28,17 @@ private:
     // Returns: 1 if |this| > |other|, 0 if equal, -1 if |this| < |other|
     int compareMagnitude(const BigInt &other) const
     {
+        if(this->number.length()>other.number.length()){
+            return 1;
+        }
+        if(this->number.length()<other.number.length()){
+            return 1;
+        }
+        for(int i=0;i<number.length();i++){
+            if(number[i]>other.number[i]){return 1;}
+            if(number[i]<other.number[i]){return -1;}
+        }
+
         // TODO: Implement this function
         return 0;
     }
@@ -35,19 +55,48 @@ public:
     // Constructor from 64-bit integer
     BigInt(int64_t value) // ex BigInt right (12315) ,
     {
+        if(value<0){
+            isNegative=true;
+            value=-value;
+        }
+        else{
+            isNegative=false;
+        }
+        number=to_string(value);
         // TODO: Implement this constructor
-        int64_t x = (value);
+
     }
 
     // Constructor from string representation
     BigInt(const string &str)
     {
+        if(str.empty()){
+            number="0";
+            isNegative=false;
+            return;
+        }
+        int first=0;
+        if(str[0]=='-'){
+            isNegative=true;
+            first=1;
+        }
+       else if(str[0]=='+'){
+            isNegative=false;
+            first=1;
+        }
+        else{
+            isNegative=false;
+        }
+        number=str.substr(first);
+        removeLeadingZeros();
         // TODO: Implement this constructor
     }
 
     // Copy constructor
     BigInt(const BigInt &other)
     {
+        number=other.number;
+        isNegative=other.isNegative;
 
         // TODO: Implement this constructor
     }
