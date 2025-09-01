@@ -21,7 +21,6 @@ private:
             isNegative=false;
         }
 
-        // TODO: Implement this function
     }
 
     // Compare absolute values of two BigInts (ignore signs)
@@ -47,8 +46,8 @@ public:
     // Default constructor - initialize to zero
     BigInt()
     {
-        // TODO: Implement this constructor
-        number = "";
+
+        number = "0";
         isNegative = false;
     }
 
@@ -224,18 +223,11 @@ public:
     // Convert BigInt to string representation
     string toString() const
     {
-        // TODO: Implement this function    // hint use the isNegative bool to add '-' or not
-        string result = {};
-        if (isNegative)
-        {
-            result = char('-') + number;
-            return result;
+        // hint use the isNegative bool to add '-' or not
+        if (isNegative && number != "0"){
+            return "-" + number;
         }
-        else
-        {
-            return number;
-        }
-        return "";
+        return number;
     }
 
     // Output stream operator (for printing)            -hazem
