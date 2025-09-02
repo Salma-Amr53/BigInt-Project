@@ -225,45 +225,58 @@ public:
 // Binary addition operator (x + y)
 BigInt operator+(BigInt lhs, const BigInt &rhs)
 {
-    // Handle different sign combinations
-    if (lhs.isNegative && !rhs.isNegative) {
-        // (-a) + b = b - a
-        lhs.isNegative = false;
-        return rhs - lhs;
-    }
-    if (!lhs.isNegative && rhs.isNegative) {
-        // a + (-b) = a - b
-        BigInt temp = rhs;
-        temp.isNegative = false;
-        return lhs - temp;
-    }
-    
-    // Both same sign: add magnitudes and keep the sign
     BigInt result;
-    result.isNegative = lhs.isNegative; // Both have same sign
-    
+
     int carry = 0;
+    // get sizes
     int i = lhs.number.length() - 1;
     int j = rhs.number.length() - 1;
 
-    while (i >= 0 || j >= 0 || carry)
+    while (i >= 0 && j >= 0)
     {
-        int firstDigit = (i >= 0) ? lhs.number[i] - '0' : 0;
-        int secondDigit = (j >= 0) ? rhs.number[j] - '0' : 0;
+        int firstDigit = lhs.number[i] - '0';  // the rightmost number in the first number
+        int secondDigit = rhs.number[j] - '0'; // the rightmost number in the second number
 
         int sum = firstDigit + secondDigit + carry;
-        carry = sum / 10;
-        int digit = sum % 10;
 
-        result.number = char(digit + '0') + result.number;
+        // if sum is 16 then carry is 1 and digit is 6
+
+        carry = sum / 10;     // carry is 0 or 1
+        int digit = sum % 10; // digit is 0-9      , this is the digit to add in the result
+
+        // enters that number in the beginning of result ex result is "123" sum is 8 so new number is "8123"
+        result.number = char(digit + '0') + result.number; // change it to char because it is one digit
+
         i--;
         j--;
     }
 
-    // Handle special case for zero
-    if (result.number.empty()) {
-        result.number = "0";
-        result.isNegative = false;
+    // the next 2 whiles is just getting every number out of either the first number or the second number
+    while (i >= 0)
+    {
+        int firstDigit = lhs.number[i] - '0';
+        int sum = firstDigit + carry;
+        carry = sum / 10;
+        int digit = sum % 10;
+        result.number = char(digit + '0') + result.number;
+        i--;
+    }
+
+    while (j >= 0)
+    {
+        int secondDigit = rhs.number[j] - '0';
+        int sum = secondDigit + carry;
+        carry = sum / 10;
+        int digit = sum % 10;
+        result.number = char(digit + '0') + result.number;
+        j--;
+    }
+
+    // if there is still a carry after finishing then it means that there is no 1 at the end
+    // so we must add it
+    if (carry) // 0 or 1
+    {
+        result.number = char(carry + '0') + result.number;
     }
 
     return result;
@@ -272,91 +285,104 @@ BigInt operator+(BigInt lhs, const BigInt &rhs)
 // Binary subtraction operator (x - y)
 BigInt operator-(BigInt lhs, const BigInt &rhs)
 {
-    // Handle different sign combinations
-    if (lhs.isNegative && !rhs.isNegative) {
-        // (-a) - b = -(a + b)
-        lhs.isNegative = false;
-        BigInt result = lhs + rhs;
-        result.isNegative = true;
-        return result;
+    // HANDLING SIGNS
+    if (rhs.isNegative && lhs.isNegative) // if both are negative  ex -x - (-y) return y - x
+    {
+        return rhs - lhs;
     }
-    if (!lhs.isNegative && rhs.isNegative) {
-        // a - (-b) = a + b
-        BigInt temp = rhs;
-        temp.isNegative = false;
-        return lhs + temp;
+    if (rhs.isNegative) // handle case if rhs is negative
+    {
+        return (lhs + rhs);
     }
-    if (lhs.isNegative && rhs.isNegative) {
-        // (-a) - (-b) = b - a
-        lhs.isNegative = false;
-        BigInt temp = rhs;
-        temp.isNegative = false;
-        return temp - lhs;
+    if (lhs.isNegative) // handle case if lhs is negative
+    {
+        return -(lhs + rhs);
     }
 
-    // Both positive: determine which is larger
-    BigInt result;
-    bool lhsLarger = false;
-    
-    // Compare magnitudes
-    if (lhs.number.length() > rhs.number.length()) {
-        lhsLarger = true;
-    } else if (lhs.number.length() < rhs.number.length()) {
-        lhsLarger = false;
-    } else {
-        // Same length, compare digit by digit
-        lhsLarger = (lhs.number >= rhs.number);
-    }
-    
-    if (lhs.number == rhs.number) {
-        return BigInt(0);
-    }
+    BigInt Minuend, Subtrahend, result; // if x - y , then x is minuend and y is subtrahend (mathematical names)
 
-    BigInt larger, smaller;
-    if (lhsLarger) {
-        larger = lhs;
-        smaller = rhs;
-        result.isNegative = false;
-    } else {
-        larger = rhs;
-        smaller = lhs;
+    // HANDLING WHICH NUMBER IS BIGGER
+    if (lhs > rhs)
+    {
+        Minuend = lhs; // if x is bigger than y , then do normal x - y
+        Subtrahend = rhs;
+    }
+    else if (lhs < rhs)
+    {
+        Minuend = rhs; // if y is bigger than x , then do y - x and make isNegative true because -ve number
+        Subtrahend = lhs;
         result.isNegative = true;
     }
-
-    // Perform subtraction
+    else
+    {
+        return BigInt(0); // if x - x return 0
+    }
+    //   ---------    X - Y    ---------
     int borrow = 0;
-    int i = larger.number.length() - 1;
-    int j = smaller.number.length() - 1;
+    int i = Minuend.number.length() - 1;    // length of x
+    int j = Subtrahend.number.length() - 1; // length of y
 
-    while (i >= 0) {
-        int largerDigit = larger.number[i] - '0';
-        int smallerDigit = (j >= 0) ? smaller.number[j] - '0' : 0;
+    while (i >= 0 && j >= 0)
+    {
+        int firstDigit = Minuend.number[i] - '0';     // takes the rightmost digit in "x"
+        int secondDigit = Subtrahend.number[j] - '0'; // takes the rightmost digit in "y"
 
-        largerDigit -= borrow;
-        if (largerDigit < smallerDigit) {
-            largerDigit += 10;
-            borrow = 1;
-        } else {
-            borrow = 0;
+        if (borrow)
+        {
+            if (firstDigit == 0)
+            {
+                // if the digit is 0 and i take borrow from it it becomes -1 but
+                // but -1 is invalid so we have to take borrow from the left so it becomes -1 + 10 = 9
+                firstDigit = 9;
+                // leave borrow = 1 because we took 1 from the left digit
+            }
+            else
+            {
+                firstDigit--; // else just borrow 1 from the digit
+                borrow = 0;
+            }
+
+            int digit;
+            if (firstDigit >= secondDigit)
+            {
+                digit = firstDigit - secondDigit;
+            }
+            else
+            {
+                firstDigit += 10; // ex 116 - 8   taking (6 - 8) 8 is bigger so borrow
+                borrow = 1;       // so now 6 is 16 - 8 is 8 and the number 116 becomes 10 (16-8) so 108
+                digit = firstDigit - secondDigit;
+            }
+            result.number = char(digit + '0') + result.number; // put this digit in the left of the string
+            i--;
+            j--;
         }
-
-        int digit = largerDigit - smallerDigit;
-        result.number = char(digit + '0') + result.number;
-        
+    }
+    int firstDigit = Minuend.number[i] - '0';
+    int secondDigit = Minuend.number[i] - '0';
+    // handle the last borrow
+    if (borrow && i >= 0)
+    {
+        if (firstDigit == 0)
+        {
+            firstDigit = 9;
+        }
+        else
+        {
+            firstDigit--;
+        }
+        borrow = 0;
+        Minuend.number[i] = char(firstDigit + '0');
+    }
+    // handle remaining digits from first number
+    while (i >= 0)
+    {
+        char thisChar = Minuend.number[i];
+        result.number = thisChar + result.number;
         i--;
-        j--;
     }
 
-    // Remove leading zeros
-    while (result.number.length() > 1 && result.number[0] == '0') {
-        result.number = result.number.substr(1);
-    }
-    
-    // Handle zero case
-    if (result.number == "0") {
-        result.isNegative = false;
-    }
-
+    result.removeLeadingZeros(); // remove zeros from the beginning of the number
     return result;
 }
 
