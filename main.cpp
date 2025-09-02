@@ -468,7 +468,7 @@ BigInt operator%(BigInt lhs, const BigInt &rhs)
     if (rhs.number == "0")
     {
         cout << "[Error] - Can't do modulo by Zero!" << endl; // handle modulo by zero
-        return;
+        throw runtime_error("Modulo by zero");
     }
     // mathematical equation for modulu  a % b = a - (a/b) * b
     return lhs - (lhs / rhs) * rhs;
