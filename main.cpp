@@ -298,6 +298,8 @@ public:
     friend bool operator<(const BigInt &lhs, const BigInt &rhs);
     friend BigInt operator+(BigInt lhs, const BigInt &rhs);
     friend BigInt operator-(BigInt lhs, const BigInt &rhs);
+    friend BigInt operator%(BigInt lhs, const BigInt &rhs);
+    friend BigInt operator*(BigInt lhs, const BigInt &rhs);
 
     bool getNegative() const
     {
@@ -461,19 +463,15 @@ BigInt operator/(BigInt lhs, const BigInt &rhs)
 }
 
 // Binary modulus operator (x % y)
-// Binary modulus operator (x % y)
 BigInt operator%(BigInt lhs, const BigInt &rhs)
 {
     if (rhs.number == "0")
-        throw runtime_error("Modulo by zero"); // معالجة حالة القسمة على صفر
-
-    // خارج القسمة
-    BigInt quotient = lhs / rhs;
-
-    // الباقي = العدد - (الخارج * المقسوم عليه)
-    BigInt remainder = lhs - (quotient * rhs);
-
-    return remainder;
+    {
+        cout << "[Error] - Can't do modulo by Zero!" << endl; // handle modulo by zero
+        return;
+    }
+    // mathematical equation for modulu  a % b = a - (a/b) * b
+    return lhs - (lhs / rhs) * rhs;
 }
 
 // Equality comparison operator (x == y)
