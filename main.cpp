@@ -56,8 +56,7 @@ public:
     // Default constructor - initialize to zero
     BigInt()
     {
-
-        number = "0";
+        number = "";
         isNegative = false;
     }
 
@@ -166,8 +165,7 @@ public:
     BigInt &operator+=(const BigInt &other)
     {
         // TODO: Implement this operator
-        BigInt temp = *this;  // this temp is because some compilers you can't do
-        *this = temp + other; // *this = *this + other
+        *this = *this + other; // *this = *this + other
         return *this;
     }
 
@@ -175,38 +173,35 @@ public:
     BigInt &operator-=(const BigInt &other)
     {
         // TODO: Implement this operator
-        BigInt temp = *this;
-        *this = temp - other;
+        *this = *this - other;
         return *this;
     }
 
     // Multiplication assignment operator (x *= y)
-    BigInt &operator*=(const BigInt &other)
-    {
-        // TODO: Implement this operator
-        BigInt temp = *this;
-        *this = temp * other;
-        return *this;
-    }
+    /*
+        BigInt &operator*=(const BigInt &other)
+        {
+            // TODO: Implement this operator
+            *this = *this * other;
+            return *this;
+        }
 
-    // Division assignment operator (x /= y)
-    BigInt &operator/=(const BigInt &other)
-    {
-        // TODO: Implement this operator
-        BigInt temp = *this;
-        *this = temp / other;
-        return *this;
-    }
+        // Division assignment operator (x /= y)
+        BigInt &operator/=(const BigInt &other)
+        {
+            // TODO: Implement this operator
+            *this = *this / other;
+            return *this;
+        }
 
-    // Modulus assignment operator (x %= y)
-    BigInt &operator%=(const BigInt &other)
-    {
-        // TODO: Implement this operator
-        BigInt temp = *this;
-        *this = temp % other;
-        return *this;
-    }
-
+        // Modulus assignment operator (x %= y)
+        BigInt &operator%=(const BigInt &other)
+        {
+            // TODO: Implement this operator
+            *this = *this % other;
+            return *this;
+        }
+    */
     // Pre-increment operator (++x)         // x = 5    cout << (x++) + (++x)    5   +   7
     BigInt &operator++()
     {
@@ -306,6 +301,7 @@ BigInt operator+(BigInt lhs, const BigInt &rhs)
 
     // Both same sign: add magnitudes and keep the sign
     BigInt result;
+    result.number = "";                 // Initialize as empty string, not "0"
     result.isNegative = lhs.isNegative; // Both have same sign
 
     int carry = 0;
@@ -340,6 +336,15 @@ BigInt operator+(BigInt lhs, const BigInt &rhs)
 BigInt operator-(BigInt lhs, const BigInt &rhs)
 {
     // Handle different sign combinations
+    if (lhs.isNegative && rhs.isNegative) // both negative
+    {
+        // (-a) - (-b) = b - a so return rhs = lhs but put both isNegative = false
+        lhs.isNegative = false;
+        BigInt temp = rhs;
+        temp.isNegative = false;
+        return temp - lhs;
+    }
+
     if (lhs.isNegative && !rhs.isNegative)
     {
         // (-a) - b = -(a + b)
@@ -355,67 +360,43 @@ BigInt operator-(BigInt lhs, const BigInt &rhs)
         temp.isNegative = false;
         return lhs + temp;
     }
-    if (lhs.isNegative && rhs.isNegative)
-    {
-        // (-a) - (-b) = b - a
-        lhs.isNegative = false;
-        BigInt temp = rhs;
-        temp.isNegative = false;
-        return temp - lhs;
-    }
 
     // Both positive: determine which is larger
-    BigInt result;
-    bool lhsLarger = false;
-
-    // Compare magnitudes
-    if (lhs.number.length() > rhs.number.length())
-    {
-        lhsLarger = true;
-    }
-    else if (lhs.number.length() < rhs.number.length())
-    {
-        lhsLarger = false;
-    }
-    else
-    {
-        // Same length, compare digit by digit
-        lhsLarger = (lhs.number >= rhs.number);
-    }
-
-    if (lhs.number == rhs.number)
+    if (rhs == lhs) // if they are equal return 0
     {
         return BigInt(0);
     }
 
+    BigInt result;
     BigInt larger, smaller;
-    if (lhsLarger)
+    int compare = lhs.compareMagnitude(rhs); // returns 1 if bigger , -1 if smaller , equal (already handled)
+    if (compare == 1)
     {
         larger = lhs;
         smaller = rhs;
         result.isNegative = false;
     }
-    else
+    else // if it is smaller (equal already handled)
     {
         larger = rhs;
         smaller = lhs;
         result.isNegative = true;
     }
 
-    // Perform subtraction
+    // ------------------------ Perform subtraction ------------------------
     int borrow = 0;
     int i = larger.number.length() - 1;
     int j = smaller.number.length() - 1;
 
     while (i >= 0)
     {
-        int largerDigit = larger.number[i] - '0';
-        int smallerDigit = (j >= 0) ? smaller.number[j] - '0' : 0;
+        int topDigit = larger.number[i] - '0';
+        int bottomDigit = (j >= 0) ? smaller.number[j] - '0' : 0; // if there is still a second number
 
-        largerDigit -= borrow;
-        if (largerDigit < smallerDigit)
+        topDigit -= borrow;
+        if (topDigit < bottomDigit)
         {
-            largerDigit += 10;
+            topDigit += 10;
             borrow = 1;
         }
         else
@@ -423,7 +404,7 @@ BigInt operator-(BigInt lhs, const BigInt &rhs)
             borrow = 0;
         }
 
-        int digit = largerDigit - smallerDigit;
+        int digit = topDigit - bottomDigit;
         result.number = char(digit + '0') + result.number;
 
         i--;
@@ -431,17 +412,7 @@ BigInt operator-(BigInt lhs, const BigInt &rhs)
     }
 
     // Remove leading zeros
-    while (result.number.length() > 1 && result.number[0] == '0')
-    {
-        result.number = result.number.substr(1);
-    }
-
-    // Handle zero case
-    if (result.number == "0")
-    {
-        result.isNegative = false;
-    }
-
+    result.removeLeadingZeros();
     return result;
 }
 
@@ -514,7 +485,7 @@ bool operator<(const BigInt &lhs, const BigInt &rhs)
 // Less-than-or-equal comparison operator (x <= y)
 bool operator<=(const BigInt &lhs, const BigInt &rhs)
 {
-    (lhs < rhs) || (lhs == rhs);
+    return (lhs < rhs) || (lhs == rhs);
 }
 
 // Greater-than comparison operator (x > y)
@@ -538,18 +509,18 @@ int main()
     cout << "The tests below will work once you implement them correctly." << endl
          << endl;
 
-    /*
     // Test 1: Constructors and basic output
     cout << "1. Constructors and output:" << endl;
-    BigInt a(12345);              // Should create BigInt from integer
-    BigInt b("-67890");           // Should create BigInt from string
-    BigInt c("0");                // Should handle zero correctly
-    BigInt d = a;                 // Should use copy constructor
-    cout << "a (from int): " << a << endl;        // Should print "12345"
-    cout << "b (from string): " << b << endl;     // Should print "-67890"
-    cout << "c (zero): " << c << endl;            // Should print "0"
-    cout << "d (copy of a): " << d << endl << endl; // Should print "12345"
-
+    BigInt a(12345);                          // Should create BigInt from integer
+    BigInt b("-67890");                       // Should create BigInt from string
+    BigInt c("0");                            // Should handle zero correctly
+    BigInt d = a;                             // Should use copy constructor
+    cout << "a (from int): " << a << endl;    // Should print "12345"
+    cout << "b (from string): " << b << endl; // Should print "-67890"
+    cout << "c (zero): " << c << endl;        // Should print "0"
+    cout << "d (copy of a): " << d << endl
+         << endl; // Should print "12345"
+    /*
     // Test 2: Arithmetic operations
     cout << "2. Arithmetic operations:" << endl;
     cout << "a + b = " << a + b << endl;          // Should calculate 12345 + (-67890)
@@ -557,22 +528,25 @@ int main()
     cout << "a * b = " << a * b << endl;          // Should calculate 12345 * (-67890)
     cout << "b / a = " << b / a << endl;          // Should calculate (-67890) / 12345
     cout << "a % 100 = " << a % BigInt(100) << endl << endl; // Should calculate 12345 % 100
-
+    */
     // Test 3: Relational operators
     cout << "3. Relational operators:" << endl;
-    cout << "a == d: " << (a == d) << endl;       // Should be true (12345 == 12345)
-    cout << "a != b: " << (a != b) << endl;       // Should be true (12345 != -67890)
-    cout << "a < b: " << (a < b) << endl;         // Should be false (12345 < -67890)
-    cout << "a > b: " << (a > b) << endl;         // Should be true (12345 > -67890)
-    cout << "c == 0: " << (c == BigInt(0)) << endl << endl; // Should be true (0 == 0)
+    cout << "a == d: " << (a == d) << endl; // Should be true (12345 == 12345)
+    cout << "a != b: " << (a != b) << endl; // Should be true (12345 != -67890)
+    cout << "a < b: " << (a < b) << endl;   // Should be false (12345 < -67890)
+    cout << "a > b: " << (a > b) << endl;   // Should be true (12345 > -67890)
+    cout << "c == 0: " << (c == BigInt(0)) << endl
+         << endl; // Should be true (0 == 0)
 
     // Test 4: Unary operators and increments
     cout << "4. Unary operators and increments:" << endl;
-    cout << "-a: " << -a << endl;                 // Should print "-12345"
-    cout << "++a: " << ++a << endl;               // Should increment and print "12346"
-    cout << "a--: " << a-- << endl;               // Should print "12346" then decrement
-    cout << "a after decrement: " << a << endl << endl; // Should print "12345"
-
+    cout << "-a: " << -a << endl;   // Should print "-12345"
+    cout << "++a: " << ++a << endl; // Should increment and print "12346"
+    cout << "a--: " << a-- << endl; // Should print "12346" then decrement
+    cout << "a after decrement: " << a << endl
+         << endl; // Should print "12345"
+    cout << BigInt(-7) - BigInt(5);
+    /*
     // Test 5: Large number operations
     cout << "5. Large number operations:" << endl;
     BigInt num1("12345678901234567890");
