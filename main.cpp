@@ -24,6 +24,32 @@ private:
         }
     }
 
+    void putColons()
+    {
+        if (number.size() <= 3)
+        {
+            return;
+        }
+
+        string result = "";
+        int count = 0;
+
+        // Process digits from right to left
+        for (int i = number.size() - 1; i >= 0; i--)
+        {
+            result = number[i] + result;
+            count++;
+
+            // Add comma every 3 digits (but not at the beginning)
+            if (count % 3 == 0 && i != 0)
+            {
+                result = ',' + result;
+            }
+        }
+
+        number = result;
+    }
+
     // Compare absolute values of two BigInts (ignore signs)
     // Returns: 1 if |this| > |other|, 0 if equal, -1 if |this| < |other|
     int compareMagnitude(const BigInt &other) const
@@ -233,14 +259,16 @@ public:
     }
 
     // Convert BigInt to string representation
-    string toString() const
+    string Format() const
     {
-        // hint use the isNegative bool to add '-' or not
+        BigInt temp = *this; // make copy to avoid modifying original
+        temp.putColons();    // add commas to the copy
+
         if (isNegative && number != "0")
         {
-            return "-" + number;
+            return "-" + temp.number;
         }
-        return number;
+        return temp.number; // returrn the number string modified
     }
 
     // Output stream operator (for printing)            -hazem
@@ -520,13 +548,14 @@ int main()
     cout << "c (zero): " << c << endl;        // Should print "0"
     cout << "d (copy of a): " << d << endl
          << endl; // Should print "12345"
-    /*
+
     // Test 2: Arithmetic operations
     cout << "2. Arithmetic operations:" << endl;
-    cout << "a + b = " << a + b << endl;          // Should calculate 12345 + (-67890)
-    cout << "a - b = " << a - b << endl;          // Should calculate 12345 - (-67890)
-    cout << "a * b = " << a * b << endl;          // Should calculate 12345 * (-67890)
-    cout << "b / a = " << b / a << endl;          // Should calculate (-67890) / 12345
+    cout << "a + b = " << (a + b).Format() << endl; // Should calculate 12345 + (-67890) = -55545
+    cout << "a - b = " << (a - b).Format() << endl; // Should calculate 12345 - (-67890) = 80235
+    /*
+    cout << "a * b = " << (a * b).Format() << endl;          // Should calculate 12345 * (-67890)
+    cout << "b / a = " << (b / a).Format() << endl;          // Should calculate (-67890) / 12345
     cout << "a % 100 = " << a % BigInt(100) << endl << endl; // Should calculate 12345 % 100
     */
     // Test 3: Relational operators
@@ -540,19 +569,20 @@ int main()
 
     // Test 4: Unary operators and increments
     cout << "4. Unary operators and increments:" << endl;
-    cout << "-a: " << -a << endl;   // Should print "-12345"
-    cout << "++a: " << ++a << endl; // Should increment and print "12346"
-    cout << "a--: " << a-- << endl; // Should print "12346" then decrement
+    cout << "-a: " << (-a).Format() << endl;   // Should print "-12345"
+    cout << "++a: " << (++a).Format() << endl; // Should increment and print "12346"
+    cout << "a--: " << (a--).Format() << endl; // Should print "12346" then decrement
     cout << "a after decrement: " << a << endl
          << endl; // Should print "12345"
     cout << BigInt(-7) - BigInt(5);
-    /*
+
     // Test 5: Large number operations
     cout << "5. Large number operations:" << endl;
     BigInt num1("12345678901234567890");
     BigInt num2("98765432109876543210");
-    cout << "Very large addition: " << num1 + num2 << endl;
-    cout << "Very large multiplication: " << num1 * num2 << endl << endl;
+    cout << "Very large addition: " << (num1 + num2).Format() << endl;
+    /*
+    cout << "Very large multiplication: " << (num1 * num2).Format() << endl << endl;
 
     // Test 6: Edge cases and error handling
     cout << "6. Edge cases:" << endl;
