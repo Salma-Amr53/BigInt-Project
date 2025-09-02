@@ -606,9 +606,8 @@ BigInt operator%(BigInt lhs, const BigInt &rhs)
 {
     if (rhs.number == "0")
     {
-        throw runtime_error("Modulo by zero"); // Can't find remainder when dividing by zero
+        throw runtime_error("Modulo by zero");
     }
-
     // The mathematical way to find remainder:
     // If 17 ÷ 5 = 3 with remainder 2, then: 17 - (3 × 5) = 17 - 15 = 2
     return lhs - (lhs / rhs) * rhs;
