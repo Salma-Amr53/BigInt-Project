@@ -3,23 +3,63 @@
 #include <cstdint>
 using namespace std;
 
-class BigInt
+class BigInt // BigInt x(237846)        x.number  = "237846"
 {
 private:
-    string number;   // Stores the number as a string  "12345"
+    string number;   // Stores the number as a string
     bool isNegative; // True if number is negative
 
     // Remove unnecessary leading zeros from the number string
     void removeLeadingZeros()
     {
-        // TODO: Implement this function
+        // handling empty string
+        if (number.empty())
+        {
+            number = "0";
+            return;
+        }
+
+        int firstNonZero = 0;
+        // if there is a zero in the beginning
+        while (firstNonZero < number.length() && number[firstNonZero] == '0')
+        {
+            firstNonZero++; // keep moving the pointer
+        }
+
+        // if all digits are zero return '0'
+        if (firstNonZero == number.length()) // since the pointer = the length then the number was ex : "00000"
+        {
+            number = "0";
+        }
+        else
+        {
+            number = number.substr(firstNonZero); // substr makes a string from the index firstNonZero
+        }
     }
 
     // Compare absolute values of two BigInts (ignore signs)
     // Returns: 1 if |this| > |other|, 0 if equal, -1 if |this| < |other|
     int compareMagnitude(const BigInt &other) const
     {
-        // TODO: Implement this function
+        if (this->number.length() > other.number.length())
+        {
+            return 1;
+        }
+        if (this->number.length() < other.number.length())
+        {
+            return -1;
+        }
+        for (int i = 0; i < number.length(); i++)
+        {
+            if (number[i] > other.number[i])
+            {
+                return 1;
+            }
+            if (number[i] < other.number[i])
+            {
+                return -1;
+            }
+        }
         return 0;
     }
 
@@ -27,27 +67,59 @@ public:
     // Default constructor - initialize to zero
     BigInt()
     {
-        // TODO: Implement this constructor
-        number = "";
+        number = "0";
         isNegative = false;
     }
 
     // Constructor from 64-bit integer
     BigInt(int64_t value) // ex BigInt right (12315) ,
     {
-        // TODO: Implement this constructor
-        int64_t x = (value);
+        if (value < 0)
+        {
+            isNegative = true;
+            value = -value;
+        }
+        else
+        {
+            isNegative = false;
+        }
+        number = to_string(value);
     }
 
     // Constructor from string representation
     BigInt(const string &str)
     {
-        // TODO: Implement this constructor
+        if (str.empty())
+        {
+            number = "0";
+            isNegative = false;
+            return;
+        }
+        int first = 0;
+        if (str[0] == '-')
+        {
+            isNegative = true;
+            first = 1;
+        }
+        else if (str[0] == '+')
+        {
+            isNegative = false;
+            first = 1;
+        }
+        else
+        {
+            isNegative = false;
+        }
+        number = str.substr(first);
+        removeLeadingZeros();
     }
 
     // Copy constructor
     BigInt(const BigInt &other)
     {
+        number = other.number;
+        isNegative = other.isNegative;
+
         // TODO: Implement this constructor
     }
 
@@ -58,8 +130,13 @@ public:
         // no destructor needed
     }
 
-    BigInt &operator=(const BigInt &other)
+    BigInt &operator=(const BigInt &other) // rana
     {
+        if (this != &other)
+        {
+            this->number = other.number;
+            this->isNegative = other.isNegative;
+        }
         // TODO: Implement this operator
         return *this;
     }
@@ -118,6 +195,17 @@ public:
         *this = temp * other;
         return *this;
     }
+    bool getIsNegative() const
+    {
+        return isNegative;
+    }
+
+    void setIsNegative(bool negative) { isNegative = negative; }
+
+    string getNumber() const
+    {
+        return number;
+    }
 
     // Division assignment operator (x /= y)
     BigInt &operator/=(const BigInt &other)
@@ -170,18 +258,12 @@ public:
     // Convert BigInt to string representation
     string toString() const
     {
-        // TODO: Implement this function    // hint use the isNegative bool to add '-' or not
-        string result = {};
-        if (isNegative)
+        // hint use the isNegative bool to add '-' or not
+        if (isNegative && number != "0")
         {
-            result = char('-') + number;
-            return result;
+            return "-" + number;
         }
-        else
-        {
-            return number;
-        }
-        return "";
+        return number;
     }
 
     // Output stream operator (for printing)            -hazem
@@ -216,15 +298,27 @@ public:
     {
         return isNegative;
     }
-    string getNumber() const
-    {
-        return number;
-    }
 };
 
 // Binary addition operator (x + y)
 BigInt operator+(BigInt lhs, const BigInt &rhs)
 {
+    // Handle different sign combinations
+    if (lhs.isNegative && !rhs.isNegative)
+    {
+        // (-a) + b = b - a
+        lhs.isNegative = false;
+        return rhs - lhs;
+    }
+    if (!lhs.isNegative && rhs.isNegative)
+    {
+        // a + (-b) = a - b
+        BigInt temp = rhs;
+        temp.isNegative = false;
+        return lhs - temp;
+    }
+
+    // Both same sign: add magnitudes and keep the sign
     BigInt result;
 
     int carry = 0;
@@ -413,14 +507,12 @@ BigInt operator%(BigInt lhs, const BigInt &rhs)
 // Equality comparison operator (x == y)
 bool operator==(const BigInt &lhs, const BigInt &rhs)
 {
-
     return (lhs.getNegative() == rhs.getNegative()) && (lhs.getNumber() == rhs.getNumber());
 }
 
 // Inequality comparison operator (x != y)
 bool operator!=(const BigInt &lhs, const BigInt &rhs)
 {
-
     return (lhs.getNegative() != rhs.getNegative()) || (lhs.getNumber() != rhs.getNumber());
 }
 
@@ -445,13 +537,11 @@ bool operator<(const BigInt &lhs, const BigInt &rhs)
         return x > 0;
     }
     return false;
-    // TODO: Implement this operator
 }
 
 // Less-than-or-equal comparison operator (x <= y)
 bool operator<=(const BigInt &lhs, const BigInt &rhs)
 {
-    return (lhs < rhs) || (lhs == rhs);
     // TODO: Implement this operator
     return false;
 }
@@ -459,7 +549,6 @@ bool operator<=(const BigInt &lhs, const BigInt &rhs)
 // Greater-than comparison operator (x > y)
 bool operator>(const BigInt &lhs, const BigInt &rhs)
 {
-    return !(lhs <= rhs);
     // TODO: Implement this operator
     return false;
 }
@@ -467,8 +556,6 @@ bool operator>(const BigInt &lhs, const BigInt &rhs)
 // Greater-than-or-equal comparison operator (x >= y)
 bool operator>=(const BigInt &lhs, const BigInt &rhs)
 {
-    return (lhs > rhs) || (lhs == rhs);
-
     // TODO: Implement this operator
     return false;
 }
