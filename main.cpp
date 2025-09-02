@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <cstdint>
+#include <stdexcept>
 using namespace std;
 
 class BigInt
@@ -204,30 +205,30 @@ public:
     }
 
     // Multiplication assignment operator (x *= y)
-    /*
-        BigInt &operator*=(const BigInt &other)
-        {
-            // TODO: Implement this operator
-            *this = *this * other;
-            return *this;
-        }
 
-        // Division assignment operator (x /= y)
-        BigInt &operator/=(const BigInt &other)
-        {
-            // TODO: Implement this operator
-            *this = *this / other;
-            return *this;
-        }
+    BigInt &operator*=(const BigInt &other)
+    {
+        // TODO: Implement this operator
+        *this = *this * other;
+        return *this;
+    }
 
-        // Modulus assignment operator (x %= y)
-        BigInt &operator%=(const BigInt &other)
-        {
-            // TODO: Implement this operator
-            *this = *this % other;
-            return *this;
-        }
-    */
+    // Division assignment operator (x /= y)
+    BigInt &operator/=(const BigInt &other)
+    {
+        // TODO: Implement this operator
+        *this = *this / other;
+        return *this;
+    }
+
+    // Modulus assignment operator (x %= y)
+    BigInt &operator%=(const BigInt &other)
+    {
+        // TODO: Implement this operator
+        *this = *this % other;
+        return *this;
+    }
+
     // Pre-increment operator (++x)         // x = 5    cout << (x++) + (++x)    5   +   7
     BigInt &operator++()
     {
@@ -300,6 +301,7 @@ public:
     friend BigInt operator-(BigInt lhs, const BigInt &rhs);
     friend BigInt operator%(BigInt lhs, const BigInt &rhs);
     friend BigInt operator*(BigInt lhs, const BigInt &rhs);
+    friend BigInt operator/(BigInt lhs, const BigInt &rhs);
 
     bool getNegative() const
     {
@@ -447,30 +449,168 @@ BigInt operator-(BigInt lhs, const BigInt &rhs)
 }
 
 // Binary multiplication operator (x * y)
+// Uses the traditional "long multiplication" method we learned in school
 BigInt operator*(BigInt lhs, const BigInt &rhs)
 {
-    BigInt result;
-    // TODO: Implement this operator
-    return result;
+    // Quick check: anything times zero is zero
+    if (lhs.number == "0" || rhs.number == "0")
+    {
+        return BigInt(0);
+    }
+
+    // Figure out if the result should be positive or negative
+    // (negative only if one number is negative, not both)
+    bool willBeNegative = lhs.isNegative != rhs.isNegative;
+
+    // make both numbers positive for easier calculation
+    // (we'll add the sign back at the end)
+    lhs.isNegative = false;
+    BigInt positiveRhs = rhs;
+    positiveRhs.isNegative = false;
+
+    BigInt finalResult;
+
+    // multiply like we do on paper: digit by digit from right to left
+    // Example: 123 × 456 = 123×6 + 123×50 + 123×400
+    for (int digitPosition = positiveRhs.number.length() - 1; digitPosition >= 0; digitPosition--)
+    {
+        int currentDigit = positiveRhs.number[digitPosition] - '0';
+
+        // Multiply the left number by this single digit
+        BigInt partialProduct;
+        partialProduct.number = "";
+        partialProduct.isNegative = false;
+        int carryOver = 0;
+
+        // add the right number of zeros (for tens, hundreds, etc.)
+        // ex: when multiplying by the "5" in "456", we're actually multiplying by "50"
+        int numberOfZeros = positiveRhs.number.length() - 1 - digitPosition;
+        for (int zeroCount = 0; zeroCount < numberOfZeros; zeroCount++)
+        {
+            partialProduct.number = "0" + partialProduct.number;
+        }
+
+        // now multiply each digit of the left number by our current digit
+        for (int leftDigitPos = lhs.number.length() - 1; leftDigitPos >= 0; leftDigitPos--)
+        {
+            int leftDigit = lhs.number[leftDigitPos] - '0';
+            int multiplication = leftDigit * currentDigit + carryOver;
+
+            carryOver = multiplication / 10;      // what we carry to the next position
+            int digitToAdd = multiplication % 10; // what we write down
+
+            partialProduct.number = char(digitToAdd + '0') + partialProduct.number;
+        }
+
+        // add left over carry
+        if (carryOver > 0)
+        {
+            partialProduct.number = to_string(carryOver) + partialProduct.number;
+        }
+
+        // Add this partial result to our running total
+        finalResult = finalResult + partialProduct;
+    }
+
+    // put the correct sign on our answer (but zero is +ve)
+    finalResult.isNegative = willBeNegative && finalResult.number != "0";
+
+    finalResult.removeLeadingZeros();
+    return finalResult;
 }
 
 // Binary division operator (x / y)
+// uses long division
 BigInt operator/(BigInt lhs, const BigInt &rhs)
 {
-    BigInt result;
-    // TODO: Implement this operator
-    return result;
+    // Handle division by zero
+    if (rhs.number == "0")
+    {
+        throw runtime_error("Division by zero");
+    }
+
+    // Handle division of zero
+    if (lhs.number == "0")
+    {
+        return BigInt(0);
+    }
+
+    // check if the result should be positive or negative
+    bool willBeNegative = lhs.isNegative != rhs.isNegative;
+
+    // work with positive numbers (easier to think)
+    BigInt dividend = lhs;
+    dividend.isNegative = false;
+    BigInt divisor = rhs;
+    divisor.isNegative = false;
+
+    // if the dividend is smaller than divisor, answer is 0
+    // ex: 5 ÷ 10 = 0
+    if (dividend.compareMagnitude(divisor) == -1)
+    {
+        return BigInt(0);
+    }
+
+    // if they're equal, answer is 1 (or -1 if signs differ)
+    // ex: 10 ÷ 10 = 1
+    if (dividend.compareMagnitude(divisor) == 0)
+    {
+        BigInt result(1);
+        result.isNegative = willBeNegative;
+        return result;
+    }
+
+    // --------------- Doing Division ---------------
+    BigInt quotient; // answer
+    quotient.number = "";
+    quotient.isNegative = false;
+
+    BigInt currentSection; // the part we're currently dividing
+    currentSection.number = "";
+    currentSection.isNegative = false;
+
+    // go through each digit of the dividend from left to right
+    for (int digitIndex = 0; digitIndex < dividend.number.length(); digitIndex++)
+    {
+        // bring down the next digit (like in long division)
+        currentSection.number += dividend.number[digitIndex];
+        currentSection.removeLeadingZeros();
+
+        // check how many times the divisor fits into our current section
+        int timesItFits = 0;
+        while (currentSection.compareMagnitude(divisor) >= 0)
+        {
+            currentSection = currentSection - divisor;
+            timesItFits++;
+        }
+
+        // write down how many times it fit
+        quotient.number += char(timesItFits + '0');
+    }
+
+    // handle case where we get an empty result (shouldnt happen, but just in case)
+    if (quotient.number.empty())
+    {
+        quotient.number = "0";
+    }
+
+    quotient.removeLeadingZeros();
+    quotient.isNegative = willBeNegative && quotient.number != "0";
+    return quotient;
 }
 
 // Binary modulus operator (x % y)
+// Finds the remainder when x is divided by y
+// Uses the mathematical formula: remainder = dividend - (quotient × divisor)
 BigInt operator%(BigInt lhs, const BigInt &rhs)
 {
     if (rhs.number == "0")
     {
-        cout << "[Error] - Can't do modulo by Zero!" << endl; // handle modulo by zero
-        return;
+        throw runtime_error("Modulo by zero"); // Can't find remainder when dividing by zero
     }
-    // mathematical equation for modulu  a % b = a - (a/b) * b
+
+    // The mathematical way to find remainder:
+    // If 17 ÷ 5 = 3 with remainder 2, then: 17 - (3 × 5) = 17 - 15 = 2
     return lhs - (lhs / rhs) * rhs;
 }
 
@@ -559,11 +699,12 @@ int main()
     cout << "2. Arithmetic operations:" << endl;
     cout << "a + b = " << (a + b).Format() << endl; // Should calculate 12345 + (-67890) = -55545
     cout << "a - b = " << (a - b).Format() << endl; // Should calculate 12345 - (-67890) = 80235
-    /*
-    cout << "a * b = " << (a * b).Format() << endl;          // Should calculate 12345 * (-67890)
-    cout << "b / a = " << (b / a).Format() << endl;          // Should calculate (-67890) / 12345
-    cout << "a % 100 = " << a % BigInt(100) << endl << endl; // Should calculate 12345 % 100
-    */
+
+    cout << "a * b = " << (a * b).Format() << endl; // Should calculate 12345 * (-67890) = -838102050
+    cout << "b / a = " << (b / a).Format() << endl; // Should calculate (-67890) / 12345 = -5.4444 = -5
+    cout << "a % 100 = " << a % BigInt(100) << endl
+         << endl; // Should calculate 12345 % 100 = 45
+
     // Test 3: Relational operators
     cout << "3. Relational operators:" << endl;
     cout << "a == d: " << (a == d) << endl; // Should be true (12345 == 12345)
@@ -587,24 +728,27 @@ int main()
     BigInt num1("12345678901234567890");
     BigInt num2("98765432109876543210");
     cout << "Very large addition: " << (num1 + num2).Format() << endl;
-    /*
-    cout << "Very large multiplication: " << (num1 * num2).Format() << endl << endl;
+    cout << "Very large multiplication: " << (num1 * num2).Format() << endl
+         << endl;
+    // 1,219,326,311,370,217,952,237,463,801,111,263,526,900
 
     // Test 6: Edge cases and error handling
     cout << "6. Edge cases:" << endl;
     BigInt zero(0);
     BigInt one(1);
-    try {
-        BigInt result = one / zero;               // Should throw division by zero error
+    try
+    {
+        BigInt result = one / zero; // Should throw division by zero error
         cout << "Division by zero succeeded (unexpected)" << endl;
-    } catch (const runtime_error& e) {
+    }
+    catch (const runtime_error &e)
+    {
         cout << "Division by zero correctly threw error: " << e.what() << endl;
     }
-    cout << "Multiplication by zero: " << one * zero << endl;        // Should be "0"
-    cout << "Negative multiplication: " << BigInt(-5) * BigInt(3) << endl;  // Should be "-15"
-    cout << "Negative division: " << BigInt(-10) / BigInt(3) << endl;       // Should be "-3"
-    cout << "Negative modulus: " << BigInt(-10) % BigInt(3) << endl;        // Should be "-1"
-    */
+    cout << "Multiplication by zero: " << one * zero << endl;              // Should be "0"
+    cout << "Negative multiplication: " << BigInt(-5) * BigInt(3) << endl; // Should be "-15"
+    cout << "Negative division: " << BigInt(-10) / BigInt(3) << endl;      // Should be "-3"
+    cout << "Negative modulus: " << BigInt(-10) % BigInt(3) << endl;       // Should be "-1"
 
     return 0;
 }
