@@ -462,11 +462,19 @@ BigInt operator/(BigInt lhs, const BigInt &rhs)
 }
 
 // Binary modulus operator (x % y)
+// Binary modulus operator (x % y)
 BigInt operator%(BigInt lhs, const BigInt &rhs)
 {
-    BigInt result;
-    // TODO: Implement this operator
-    return result;
+    if (rhs.number == "0")
+        throw runtime_error("Modulo by zero"); // معالجة حالة القسمة على صفر
+
+    // خارج القسمة
+    BigInt quotient = lhs / rhs;
+
+    // الباقي = العدد - (الخارج * المقسوم عليه)
+    BigInt remainder = lhs - (quotient * rhs);
+
+    return remainder;
 }
 
 // Equality comparison operator (x == y)
